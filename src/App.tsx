@@ -2,11 +2,12 @@ import { createSignal, onCleanup, onMount } from 'solid-js';
 import type { Component } from 'solid-js';
 import { createFFmpeg, fetchFile, type FFmpeg } from '@ffmpeg/ffmpeg';
 
+import { GithubIcon } from './components';
 import styles from './App.module.css';
 
 const App: Component = () => {
   let ffmpeg: FFmpeg;
-  let input: HTMLInputElement = null;
+  let input: any; // @TODO: fix this
 
   const [files, setFiles] = createSignal<File[]>([]);
   const [processing, setProcessing] = createSignal(false);
@@ -68,15 +69,23 @@ const App: Component = () => {
 
   return (
     <div class={styles.App}>
+      <a class={styles.github} href="https://github.com/BeeMargarida/video-to-gif" target='_blank'>
+        <GithubIcon />
+      </a>
       <header class={styles.header}>
         <h1>Video to GIF</h1>
-        <p>Convert your videos to GIF using the processing power of your PC (powered by ffmpeg using WASM)</p>
+        <p>Convert your videos to GIF using the processing power of your PC</p>
+        <p>(powered by ffmpeg using WASM)</p>
       </header>
-
-      <div>
-        <button class={styles.filesButton} onClick={onFileClick}>Upload your video</button>
+      <div class={styles.buttons}>
+        <button
+          class={styles.filesButton}
+          onClick={onFileClick}
+        >
+          Upload your video
+        </button>
         <input ref={input} class={styles.input} type="file" onChange={onInputChange}>Add files here</input>
-        <button class={styles.submit} onClick={videoToGif}>Test</button>
+        <button class={styles.button} onClick={videoToGif} disabled={files().length === 0}>Convert</button>
         {processing() ? (
           // <Progress progress={progress()}/>
           <div>{progress()}</div>

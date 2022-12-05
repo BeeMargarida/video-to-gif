@@ -1,42 +1,95 @@
 .App {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   text-align: center;
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  align-items: center;
+  flex-direction: column;
+  background-color: #8BC6EC;
+  background-image: linear-gradient(135deg, #8BC6EC 0%, #9599E2 100%);
 }
 
-.logo {
-  animation: logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
+.github {
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin: 1rem;
+}
+
+.github svg {
+  width: 30px;
+  height: 30px;
 }
 
 .header {
-  /* background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white; */
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 5rem;
+  text-shadow: #9599E2 2px 0px 10px;
+  margin-bottom: 0px;
 }
 
 .input {
- display: none
+  display: none;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
 }
 
 .filesButton {
+  background-color: rgb(243, 240, 255);
+  color: rgb(121, 80, 242);
+  padding: 0px 18px;
+  display: inline-block;
+  appearance: none;
+  text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
+  height: 36px;
+  width: auto;
+  border-radius: 4px;
+  font-weight: 600;
+  position: relative;
+  line-height: 1;
+  font-size: 14px;
+  user-select: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.button {
   background-color: rgb(121, 80, 242);
   color: white;
+  padding: 0px 18px;
+  display: inline-block;
+  appearance: none;
+  text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
+  height: 36px;
+  width: fit-content;
+  border-radius: 4px;
+  font-weight: 600;
+  position: relative;
+  line-height: 1;
+  font-size: 14px;
+  user-select: none;
+  cursor: pointer;
+  border: 1px solid transparent;
 }
 
-.link {
-  color: #b318f0;
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.button:disabled {
+  border-color: transparent;
+  background-color: rgb(233, 236, 239);
+  color: rgb(173, 181, 189);
+  cursor: not-allowed;
+  pointer-events: none;
 }
