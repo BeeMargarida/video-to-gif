@@ -2,12 +2,11 @@ import { createSignal, onCleanup, onMount } from 'solid-js';
 import type { Component } from 'solid-js';
 import { createFFmpeg, fetchFile, type FFmpeg } from '@ffmpeg/ffmpeg';
 
-import { Progress } from './components';
 import styles from './App.module.css';
 
 const App: Component = () => {
   let ffmpeg: FFmpeg;
-  let input: HTMLInputElement;
+  let input: HTMLInputElement = null;
 
   const [files, setFiles] = createSignal<File[]>([]);
   const [processing, setProcessing] = createSignal(false);
