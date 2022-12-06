@@ -2,7 +2,7 @@ import { createSignal, onCleanup, onMount } from 'solid-js';
 import type { Component } from 'solid-js';
 import { createFFmpeg, fetchFile, type FFmpeg } from '@ffmpeg/ffmpeg';
 
-import { GithubIcon } from './components';
+import { Button, GithubIcon } from './components';
 import styles from './App.module.css';
 
 const App: Component = () => {
@@ -22,6 +22,8 @@ const App: Component = () => {
     });
 
     ffmpeg.setLogger(({ type, message }) => {
+      // @TODO: show alert messages if something goes wrong/right
+
       // console.log(type, message);
       /*
        * type can be one of following:
@@ -35,16 +37,17 @@ const App: Component = () => {
 
   onCleanup(() => ffmpeg.exit());
   
-  async function videoToGif() {
+  async function videoToGif(): Promise<Uint8Array> {
     setProcessing(true);
 
     const file = files()[0];
     ffmpeg.FS('writeFile', file.name, await fetchFile(file));
     await ffmpeg.run('-i', file.name, '-vf', 'fps=30,scale=1080:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse', '-loop', '0', 'test.gif');
+    
+    //@TODO: return gif with same name as original file
     const newFile = ffmpeg.FS('readFile', 'test.gif');
     
-    downloadGif(newFile.buffer);
-    setProcessing(false);
+    return newFile;
   }
 
   async function downloadGif(data: ArrayBuffer) {
@@ -67,6 +70,12 @@ const App: Component = () => {
     setFiles(Array.from((e.target as HTMLInputElement).files ?? []))
   }
 
+  async function onConvertClick() {
+    const gif = await videoToGif();
+    downloadGif(gif.buffer);
+    setProcessing(false);
+  }
+
   return (
     <div class={styles.App}>
       <a class={styles.github} href="https://github.com/BeeMargarida/video-to-gif" target='_blank'>
@@ -78,14 +87,24 @@ const App: Component = () => {
         <p>(powered by ffmpeg using WASM)</p>
       </header>
       <div class={styles.buttons}>
-        <button
-          class={styles.filesButton}
-          onClick={onFileClick}
-        >
+        <Button onClick={onFileClick}>
           Upload your video
-        </button>
-        <input ref={input} class={styles.input} type="file" onChange={onInputChange}>Add files here</input>
-        <button class={styles.button} onClick={videoToGif} disabled={files().length === 0}>Convert</button>
+        </Button>
+        <input
+          ref={input}
+          class={styles.input}
+          type="file"
+          onChange={onInputChange}
+        >
+          Add files here
+        </input>
+        <Button
+          disabled={files().length === 0}
+          loading={processing()}
+          onClick={onConvertClick}
+        >
+          Convert
+        </Button>
         {processing() ? (
           // <Progress progress={progress()}/>
           <div>{progress()}</div>

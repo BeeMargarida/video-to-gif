@@ -1,0 +1,57 @@
+.button {
+    padding: 0px 18px;
+    display: inline-block;
+    appearance: none;
+    text-align: left;
+    text-decoration: none;
+    box-sizing: border-box;
+    height: 36px;
+    width: fit-content;
+    border-radius: 4px;
+    font-weight: 600;
+    position: relative;
+    line-height: 1;
+    font-size: 14px;
+    user-select: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.button.filled {
+    background-color: rgb(121, 80, 242);
+    color: white;
+}
+
+.button:disabled {
+    border-color: transparent;
+    background-color: rgb(233, 236, 239);
+    color: rgb(173, 181, 189);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.button.light {
+    background-color: rgb(243, 240, 255);
+    color: rgb(121, 80, 242);
+}
+
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    border-bottom-color: rgb(121, 80, 242);
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

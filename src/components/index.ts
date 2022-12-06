@@ -1,3 +1,4 @@
+import Button from './Button/Button';
 import GithubIcon from './GithubIcon/GithubIcon';
 
-export { GithubIcon };
+export { Button, GithubIcon };
