@@ -1,0 +1,38 @@
+.root {
+    position: relative;
+    overflow: hidden;
+    padding: 12px 16px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    max-width: 400px;
+}
+
+.root.success {
+    background-color: rgb(18, 184, 134);
+    color: rgb(255, 255, 255);
+}
+
+.root.error {
+    background-color: rgb(250, 82, 82);
+    color: rgb(255, 255, 255);
+}
+
+.title {
+    box-sizing: border-box;
+    margin: 0px 0px 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    line-height: 1.5;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.content {
+    line-height: 1.55;
+    text-overflow: ellipsis;
+    text-align: left;
+    overflow: hidden;
+    font-size: 14px;
+    color: white;
+}

@@ -1,4 +1,6 @@
+import Alert from './Alert/Alert';
 import Button from './Button/Button';
 import GithubIcon from './GithubIcon/GithubIcon';
+import Progress from './Progress/Progress';
 
-export { Button, GithubIcon };
+export { Alert, Button, GithubIcon, Progress };
