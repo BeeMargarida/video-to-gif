@@ -33,8 +33,13 @@
   margin-bottom: 0px;
 }
 
-.input {
-  display: none;
+.header p {
+  line-height: 1.5rem;
+}
+
+.note {
+  font-size: 1rem;
+  text-decoration: underline;
 }
 
 .buttons {
@@ -42,4 +47,22 @@
   flex-direction: column;
   gap: 20px;
   align-items: center;
+}
+
+.inputWrapper {
+  border: 2px dashed white;
+  padding: 3rem;
+}
+
+.name {
+  color: white;
+  margin-top: 1rem;
+}
+
+.input {
+  display: none;
+}
+
+.alert {
+  margin-top: 2rem;
 }

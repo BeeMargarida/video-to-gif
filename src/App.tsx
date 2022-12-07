@@ -2,8 +2,13 @@ import { createSignal, onCleanup, onMount } from 'solid-js';
 import type { Component } from 'solid-js';
 import { createFFmpeg, fetchFile, type FFmpeg } from '@ffmpeg/ffmpeg';
 
-import { Button, GithubIcon } from './components';
+import { Alert, Button, GithubIcon, Progress } from './components';
 import styles from './App.module.css';
+
+const TYPE_LOG_OUT = "ffout";
+const TYPE_LOG_ERR = "fferr";
+const MESSAGE_LOG_END = "FFMPEG_END";
+const MESSAGE_LOG_ERR_OOM = "pthread sent an error";
 
 const App: Component = () => {
   let ffmpeg: FFmpeg;
@@ -12,7 +17,9 @@ const App: Component = () => {
   const [files, setFiles] = createSignal<File[]>([]);
   const [processing, setProcessing] = createSignal(false);
   const [progress, setProgress] = createSignal(0);
- 
+  const [error, setError] = createSignal<string | null>("");
+  const [success, setSuccess] = createSignal<string | null>("");
+
   onMount(async () => {
     ffmpeg = createFFmpeg({ log: true });
     if (!ffmpeg.isLoaded()) await ffmpeg.load();
@@ -22,43 +29,51 @@ const App: Component = () => {
     });
 
     ffmpeg.setLogger(({ type, message }) => {
-      // @TODO: show alert messages if something goes wrong/right
+      if (message === MESSAGE_LOG_END && type === TYPE_LOG_OUT) {
+        setSuccess("The file was successfully converted to a GIF.");
+        return;
+      }
 
-      // console.log(type, message);
-      /*
-       * type can be one of following:
-       *
-       * info: internal workflow debug messages
-       * fferr: ffmpeg native stderr output
-       * ffout: ffmpeg native stdout output
-       */
+      if (type === TYPE_LOG_ERR && message.includes(MESSAGE_LOG_ERR_OOM)) {
+        const file = files()[0];
+        const fileName = (file.name.substring(0, file.name.lastIndexOf('.')) || file.name) + ".gif";
+
+        setError(`The file provided is too big. Please try doing it locally with the command 'ffmpeg -i ${file.name} -vf "fps=20,scale=720:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ${fileName}'`);
+        setProcessing(false);
+
+        ffmpeg.FS("unlink", file.name);
+        ffmpeg.FS("unlink", fileName);
+        ffmpeg.exit();
+
+      }
     });
+
+    window.onerror = () => {
+      setError("An error occured while converting. Check if your file is not too big.");
+      setProcessing(false); 
+      ffmpeg.exit();
+    }
   });
 
   onCleanup(() => ffmpeg.exit());
-  
-  async function videoToGif(): Promise<Uint8Array> {
-    setProcessing(true);
 
-    const file = files()[0];
+  async function videoToGif(file: File, fileName: string): Promise<Uint8Array> {
     ffmpeg.FS('writeFile', file.name, await fetchFile(file));
-    await ffmpeg.run('-i', file.name, '-vf', 'fps=30,scale=1080:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse', '-loop', '0', 'test.gif');
-    
-    //@TODO: return gif with same name as original file
-    const newFile = ffmpeg.FS('readFile', 'test.gif');
-    
-    return newFile;
+    await ffmpeg.run('-i', file.name, '-vf', 'fps=20,scale=720:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse', '-loop', '0', fileName);
+    return ffmpeg.FS('readFile', fileName);
   }
 
-  async function downloadGif(data: ArrayBuffer) {
+  async function downloadGif(data: ArrayBuffer, fileName: string) {
     const url = window.URL.createObjectURL(new Blob([data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'export.gif');
+    link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
     window.URL.revokeObjectURL(url);
     link.remove();
+
+    ffmpeg.FS("unlink", fileName);
   }
 
   function onFileClick() {
@@ -71,9 +86,16 @@ const App: Component = () => {
   }
 
   async function onConvertClick() {
-    const gif = await videoToGif();
-    downloadGif(gif.buffer);
-    setProcessing(false);
+    setProcessing(true);
+
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+
+    const file = files()[0];
+    const fileName = (file.name.substring(0, file.name.lastIndexOf('.')) || file.name) + ".gif";
+    const gif = await videoToGif(file, fileName);
+    downloadGif(gif.buffer, fileName);
+
+    setProcessing(false); 
   }
 
   return (
@@ -83,21 +105,24 @@ const App: Component = () => {
       </a>
       <header class={styles.header}>
         <h1>Video to GIF</h1>
-        <p>Convert your videos to GIF using the processing power of your PC</p>
-        <p>(powered by ffmpeg using WASM)</p>
+        <p>Convert your videos to GIF using the processing power of your PC,<br />powered by ffmpeg using WASM.</p>
+        <p class={styles.note}>Please bear in mind that files bigger than 2MB might cause Out of Memory errors.</p>
       </header>
       <div class={styles.buttons}>
-        <Button onClick={onFileClick}>
-          Upload your video
-        </Button>
-        <input
-          ref={input}
-          class={styles.input}
-          type="file"
-          onChange={onInputChange}
-        >
-          Add files here
-        </input>
+        <div class={styles.inputWrapper}>
+          <Button onClick={onFileClick} variant="light">
+            Upload your video
+          </Button>
+          <input
+            ref={input}
+            class={styles.input}
+            type="file"
+            onChange={onInputChange}
+          >
+            Add files here
+          </input>
+          <div class={styles.name}>{files()?.[0]?.name}</div>
+        </div>
         <Button
           disabled={files().length === 0}
           loading={processing()}
@@ -106,8 +131,25 @@ const App: Component = () => {
           Convert
         </Button>
         {processing() ? (
-          // <Progress progress={progress()}/>
-          <div>{progress()}</div>
+          <Progress value={progress()} />
+        ) : undefined}
+        {error() ? (
+          <Alert
+            class={styles.alert}
+            status="error"
+            title="Oops"
+          >
+            {error() as string}
+          </Alert>
+        ) : undefined}
+        {success() ? (
+          <Alert
+            class={styles.alert}
+            status="success"
+            title="Success"
+          >
+            {success() as string}
+          </Alert>
         ) : undefined}
       </div>
     </div>
