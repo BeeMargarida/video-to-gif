@@ -82,6 +82,8 @@ const App: Component = () => {
   }
 
   function onInputChange(e: Event) {
+    setError("");
+    setSuccess("");
     setFiles(Array.from((e.target as HTMLInputElement).files ?? []))
   }
 
